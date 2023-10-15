@@ -118,7 +118,7 @@ div.hero h2 {
     margin: 20px;
 }
 
-.chart-container {
+.chart-container { /*container for charts*/
             display: flex;
         }
         .chart {
