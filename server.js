@@ -61,7 +61,7 @@ app.get('/budget-data', async (req, res) => {
   }
 });
 
-app.post('/add-budget', async (req, res) => { // For adding data
+app.post('/add-budget', async (req, res) => { // For adding new data
   const newData = req.body;
 
   try {
