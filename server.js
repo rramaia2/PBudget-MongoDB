@@ -41,7 +41,7 @@ app.get('/hello', (req, res) => {
   res.send('Hello World!');
 });
 
-app.get('/budget', async (req, res) => {
+app.get('/budget', async (req, res) => { // To fetch data
   try {
     const data = await Budget.find().exec();
     res.json(data);
@@ -61,7 +61,7 @@ app.get('/budget-data', async (req, res) => {
   }
 });
 
-app.post('/add-budget', async (req, res) => {
+app.post('/add-budget', async (req, res) => { // For adding data
   const newData = req.body;
 
   try {
