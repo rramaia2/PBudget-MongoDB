@@ -125,155 +125,144 @@
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js" integrity="sha512-quHCp3WbBNkwLfYUMd+KwBAgpVukJu5MncuQaWXgCrfgcxCJAq/fo+oqrRKOj+UKEmyMCG3tb8RB63W+EmrOBg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha512-s+xg36jbIujB2S2VKfpGmlC3T5V2TF3lY48DX7u2r9XzGzgPsa6wTpOQA7J9iffvdeBN0q9tKzRxVxw1JviZPg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
     <script>
         var dataSource = {
             datasets: [
                 {
                     data: [],
-                    backgroundColor: [
-                        '#ffcd56',
-                        '#ff6384',
-                        '#36a2eb',
-                        '#fd6b19',
-                        '#7b6888',
-                        '#4d5791',
-                        '#359a2d',
-                        '#b642b8',
-                        '#d5d73c'
-                    ],
+                    backgroundColor: [],
                 }
             ],
             labels: []
         };
-    
+        // Function to create the First Pie chart
         function createChart() {
-    var ctx = document.getElementById("firstChart").getContext("2d");
-    var myPieChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            datasets: [
-                {
-                    data: dataSource.datasets[0].data,
-                    backgroundColor: dataSource.datasets[0].backgroundColor,
+            var ctx = document.getElementById("firstChart").getContext("2d");
+            var myPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    datasets: [
+                        {
+                            data: dataSource.datasets[0].data,
+                            backgroundColor: dataSource.datasets[0].backgroundColor,
+                        }
+                    ],
+                    labels: dataSource.labels
                 }
-            ],
-            labels: dataSource.labels
+            });
         }
-    });
-}
 
         function getBudget() {
-    axios.get('/budget')
-        .then(function(res) {
-            console.log(res);
-            if (res.data && res.data.length) {
-                for (var i = 0; i < res.data.length; i++) {
-                    dataSource.datasets[0].data[i] = res.data[i].budget;
-                    dataSource.labels[i] = res.data[i].title;
-                }
-                createChart();
-            } else {
-                console.error('No data received.');
-            }
-        })
-        .catch(function(error) {
-            console.error(error);
-        });
-}
+            axios.get('/budget')
+                .then(function(res) {
+                    console.log(res);
+                    if (res.data && res.data.labels) {
+                        dataSource.datasets[0].data = res.data.datasets[0].data;
+                        dataSource.datasets[0].backgroundColor = res.data.datasets[0].backgroundColor;
+                        dataSource.labels = res.data.labels;
+                        createChart();
+                    } else {
+                        console.error('No data received.');
+                    }
+                })
+                .catch(function(error) {
+                    console.error(error);
+                });
+        }
 
         getBudget();
     </script>
-
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
         // Function to create the second doughnut chart
         function createSecondChart(data) {
-        const width = 700;
-        const height = 500;
-        const radius = Math.min(width, height) / 2;
+            const width = 700;
+            const height = 500;
+            const radius = Math.min(width, height) / 2;
 
-        const svg = d3.select("#secondChart")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .append("g")
-            .attr("transform", `translate(${width / 2},${height / 2})`);
+            const svg = d3.select("#secondChart")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${width / 2},${height / 2})`);
 
-        const color = d3.scaleOrdinal()
-            .domain(data.map(d => d.title))
-            .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00","#FF5733","#DFDFDF","#A898A9","#CDBAD1","#a00cdd"]);
+            const color = d3.scaleOrdinal()
+                .domain(data.map(d => d.title))
+                .range(data.map(d => d.color));
 
-        const pie = d3.pie()
-            .sort(null)
-            .value(d => d.budget);
+            const pie = d3.pie()
+                .sort(null)
+                .value(d => d.budget);
 
-        const arc = d3.arc()
-            .outerRadius(radius * 0.8)
-            .innerRadius(radius * 0.4);
+            const arc = d3.arc()
+                .outerRadius(radius * 0.8)
+                .innerRadius(radius * 0.4);
 
-        const outerArc = d3.arc()
-            .innerRadius(radius * 0.9)
-            .outerRadius(radius * 0.9);
+            const outerArc = d3.arc()
+                .innerRadius(radius * 0.9)
+                .outerRadius(radius * 0.9);
 
-        const arcs = svg.selectAll(".arc")
-            .data(pie(data))
-            .enter()
-            .append("g")
-            .attr("class", "arc");
+            const arcs = svg.selectAll(".arc")
+                .data(pie(data))
+                .enter()
+                .append("g")
+                .attr("class", "arc");
 
-        arcs.append("path")
-            .attr("d", arc)
-            .style("fill", d => color(d.data.title))
-            .attr("class", "slice");
+            arcs.append("path")
+                .attr("d", arc)
+                .style("fill", d => color(d.data.title))
+                .attr("class", "slice");
 
-        const text = svg.selectAll(".labels")
-            .data(pie(data))
-            .enter()
-            .append("text")
-            .attr("dy", ".35em")
-            .text(function (d) {
-                return d.data.title;
-            });
+            const text = svg.selectAll(".labels")
+                .data(pie(data))
+                .enter()
+                .append("text")
+                .attr("dy", ".35em")
+                .text(function (d) {
+                    return d.data.title;
+                });
 
-        function midAngle(d) {
-            return d.startAngle + (d.endAngle - d.startAngle) / 2;
-        }
+            function midAngle(d) {
+                return d.startAngle + (d.endAngle - d.startAngle) / 2;
+            }
 
-        text.transition().duration(1000)
-            .attr("transform", function (d) {
-                var pos = outerArc.centroid(d);
-                pos[0] = radius * 1.002 * (midAngle(d) < Math.PI ? 1 : -1);
-                return "translate(" + pos + ")";
-            })
-            .style("text-anchor", function (d) {
-                return midAngle(d) < Math.PI ? "start" : "end";
-            });
+            text.transition().duration(1000)
+                .attr("transform", function (d) {
+                    var pos = outerArc.centroid(d);
+                    pos[0] = radius * 1.002 * (midAngle(d) < Math.PI ? 1 : -1);
+                    return "translate(" + pos + ")";
+                })
+                .style("text-anchor", function (d) {
+                    return midAngle(d) < Math.PI ? "start" : "end";
+                });
 
-        const polyline = svg.selectAll(".lines")
-            .data(pie(data))
-            .enter()
-            .append("polyline");
+            const polyline = svg.selectAll(".lines")
+                .data(pie(data))
+                .enter()
+                .append("polyline");
 
-        polyline.transition().duration(1000)
-            .attr("points", function (d) {
+            polyline.transition().duration(1000)
+                .attr("points", function (d) {
                 var pos = outerArc.centroid(d);
                 pos[0] = radius * 1 * (midAngle(d) < Math.PI ? 1 : -1);
                 return [arc.centroid(d), outerArc.centroid(d), pos];
-            });
-    }
+    });
 
-    // Function to fetch data from budget-data.json and create the second chart
-    function getSecondBudget() {
-        d3.json('/budget-data')
-            .then(function (data) {
-                createSecondChart(data.myBudget);
-            });
-    }
+        }
 
-    // Call the function to create the second chart
-    getSecondBudget();
-</script>
+        function getSecondBudget() {
+            axios.get('/budget-data')
+                .then(function (response) {
+                    createSecondChart(response.data.myBudget);
+                })
+                .catch(function (error) {
+                    console.error(error);
+                });
+        }
+
+        getSecondBudget();
+    </script>
 
 </body>
 </html>

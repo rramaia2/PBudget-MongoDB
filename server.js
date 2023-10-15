@@ -42,14 +42,24 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/budget', async (req, res) => { // To fetch data
-  try {
-    const data = await Budget.find().exec();
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Internal Server Error');
-  }
-});
+    try {
+      const data = await Budget.find().exec();
+      const chartData = {
+        datasets: [
+          {
+            data: data.map(item => item.budget),
+            backgroundColor: data.map(item => item.color), // Include colors
+          },
+        ],
+        labels: data.map(item => item.title),
+      };
+      res.json(chartData);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
 
 app.get('/budget-data', async (req, res) => {
   try {
